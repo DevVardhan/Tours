@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import fs from 'fs/promises';
 import tourModel from '../models/tourModel.js';
+import readline from 'readline';
 
 dotenv.config();
 
@@ -36,4 +37,17 @@ const connectDb = async () => {
     }
 };
 
-connectDb();
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+rl.question("DO YOU WANT TO OVERRIDE DATABASE (Y/N)? ", (valid) => {
+  if (valid.toUpperCase() === 'Y') {
+    connectDb();
+  } else {
+    console.log("Operation canceled.");
+  }
+  rl.close(); // Close the input stream
+});
