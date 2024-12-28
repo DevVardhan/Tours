@@ -2,12 +2,18 @@ import express from 'express';
 import Morgan from 'morgan';
 import tourRouter from './routes/tourRoutes.js'; // Import default export
 import userRouter from './routes/userRoutes.js'; // Import default export
+import * as dotenv from 'dotenv';
 
 const app = express();
+dotenv.config(); 
 
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
-app.use(Morgan('dev'));  // Logging middleware
+
+//Env set to dev 
+if(process.env.NODE_ENV === 'development'){
+    app.use(Morgan('dev'));  // Logging middleware
+}
 
 // Attach a timestamp to every request
 app.use((req, _, next) => {

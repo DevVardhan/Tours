@@ -3,11 +3,13 @@ import tourController from "../controllers/tourController.js";
 
 const router = express.Router();
 
-router.param('id' , tourController.checkId) ;
+// Middlewear to validate id parameter in request 
+// router.param('id' , tourController.checkId) ;
+
 
 router.route('/')
       .get(tourController.getAllTour)
-      .post(tourController.validateCreateReq , tourController.createTour);
+      .post(tourController.createTour);
 
 
 router.route('/:id')

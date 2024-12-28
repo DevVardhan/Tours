@@ -1,51 +1,58 @@
-import fs from 'fs/promises';
+// import fs from 'fs/promises';
 
-const accessFile = async () => {
-    try {
-        // console.log(process.cwd()); In case u dont know the current working directory 
-        // Read the file and parse its content
-        const data = await fs.readFile('./devData/data/tours-simple.json', "utf-8"); // file path according to current working directory
-        if (!data ) {
-            throw new Error("File is empty or contains invalid data");
-        }
-        return JSON.parse(data); // Return parsed JSON directly
-    } catch (err) {
-        console.error("Error reading tours file:", err.message); // Log the error
-    }
-};
+import tourModel from '../models/tourModel.js';
 
-//Checks if the request is valid , acts as a middlewear
-const checkId = async(req , res , next , val) =>{
-    try {
-        const id = req.params.id * 1; // converting from type string to int by multplying by an int 
-        const tours = await accessFile();
-        if (id > tours.length - 1) throw new Error("id limit exceeded");
-    } catch (err) {
-        return res.status(404).json({
-            status: 'fail',
-            message: 'Id not valid',
-            error: `${err}`,
-        });
-    }
-    next();
-}
+// ============================= NOT USING FILES AS DATABASE ======================================
+// const accessFile = async () => {
+//     try {
+//         // console.log(process.cwd()); In case u dont know the current working directory 
+//         // Read the file and parse its content
+//         const data = await fs.readFile('./devData/data/tours-simple.json', "utf-8"); // file path according to current working directory
+//         if (!data ) {
+//             throw new Error("File is empty or contains invalid data");
+//         }
+//         return JSON.parse(data); // Return parsed JSON directly
+//     } catch (err) {
+//         console.error("Error reading tours file:", err.message); // Log the error
+//     }
+// };
+//
 
+// ============================== VALIDATION LOGIC NOW IN MODELS ITSELF (Business logic) =============================
+// //Checks if the request is valid , acts as a middlewear
+// const checkId = async(req , res , next , val) =>{
+//     try {
+//         const id = req.params.id * 1; // converting from type string to int by multplying by an int 
+//         const tours = await accessFile();
+//         if (id > tours.length - 1) throw new Error("id limit exceeded");
+//     } catch (err) {
+//         return res.status(404).json({
+//             status: 'fail',
+//             message: 'Id not valid',
+//             error: `${err}`,
+//         });
+//     }
+//     next();
+// }
+
+// ============================== VALIDATION LOGIC NOW IN MODELS ITSELF (Business logic) =============================
 //Validates the request's body , acts as a middlewear btw router and createTour
-const validateCreateReq = async(req , res , next ) => {
-    if (!req.body.name || !req.body.duration) {
-        return res.status(400).json({
-            status: 'fail',
-            message: 'Missing required fields: name or duration',
-        });
-    }
-    next();
-}
+// const validateCreateReq = async(req , res , next ) => {
+//     if (!req.body.name || !req.body.duration) {
+//         return res.status(400).json({
+//             status: 'fail',
+//             message: 'Missing required fields: name or duration',
+//         });
+//     }
+//     next();
+// }
 
 
 const getAllTour = async (req, res) => {
     try {
-        const data = await accessFile(); // async call in event loop
-        //status ok
+
+        const data = await tourModel.find(); // mongoose querry 
+
         res.status(200).json({
             status: 'success',
             results: data.length,
@@ -66,15 +73,16 @@ const getAllTour = async (req, res) => {
 
 const getTourById = async (req, res) => {
     try {
-        const id = req.params.id * 1; // converting from type string to int by multplying by an int 
-        const tours = await accessFile();
-        tours.find(ele => ele.id === id); // using find function with its validator function to find matchig ids / elemets 
+        const id  = req.params.id ; 
+        const tours = await tourModel.findOne({_id : id}); 
+
         res.status(200).json({
             status: 'success',
-            message: `Tour with id ${id} found successfully`,
+            message: `Tour ${id} found successfully`,
             tour: tours,
         });
     } catch (err) {
+        console.log(err);
         res.status(500).json({
             status: 'fail',
             message: 'Server error',
@@ -85,27 +93,23 @@ const getTourById = async (req, res) => {
 
 const createTour = async(req , res) => {
     try {
-        const tours = await accessFile();
-
-        const tourId = tours[tours.length - 1]?.id + 1 || 1; // Handle empty tours array
-        const newTour = { id: tourId, ...req.body };
-
-        tours.push(newTour);
-        await fs.writeFile('./devData/data/tours-simple.json', JSON.stringify(tours)); // Corrected path
-
+        
+        const newTour = await tourModel.create(req.body); // Creating Document for new tour 
+        
         // status code - 201 => data generated / created successfully
         res.status(201).json({
             status: 'success',
-            message: `Tour ${tourId} successfully created`,
+            message: `Tour successfully created`,
             data: {
                 tour: newTour,
             },
         });
     } catch (err) {
         console.error(`Error: ${err}`);
-        res.status(500).json({
+        res.status(400).json({
             status: 'fail',
-            message: 'Server error',
+            message: 'Bad Request',
+            error : `${err.message}`
         });
     }
 }
@@ -118,23 +122,33 @@ const updateTour = (_ , res) => {
     })
 }
 
-const deleteTour = (_ , res) => {
-    //to be finished
-    res.status(500).josn({
+const deleteTour = async(req , res) => {
+    const id = req.params.id ;
+
+    const tour = await tourModel.deleteOne({ _id : id});
+
+    res.status(200).json({
+        status : 'Success', 
+        messege : 'Tour deleted successfully' , 
+        data : {
+            tour , 
+        }
+    })
+    res.status(500).json({
         status: 'fail',
         message: 'Server error/ Not Created',
     }) 
 }
 
 const tourControllers = {
-    accessFile,
+     // accessFile,
     deleteTour,
     getAllTour,
     getTourById,
     updateTour,
     createTour,
-    checkId ,
-    validateCreateReq,
+     // checkId ,
+     // validateCreateReq,
 }
 
 export default tourControllers ; 
