@@ -61,7 +61,7 @@ const getAllTour = async (req, res) => {
                 tours: data,
             }
         });
-    } catch(err) {
+    } catch (err) {
         //internal server error 
         res.status(500).json({
             status: 'fail',
@@ -73,8 +73,8 @@ const getAllTour = async (req, res) => {
 
 const getTourById = async (req, res) => {
     try {
-        const id  = req.params.id ; 
-        const tours = await tourModel.findOne({_id : id}); 
+        const id = req.params.id;
+        const tours = await tourModel.findOne({ _id: id });
 
         res.status(200).json({
             status: 'success',
@@ -91,11 +91,11 @@ const getTourById = async (req, res) => {
     }
 }
 
-const createTour = async(req , res) => {
+const createTour = async (req, res) => {
     try {
-        
+
         const newTour = await tourModel.create(req.body); // Creating Document for new tour 
-        
+
         // status code - 201 => data generated / created successfully
         res.status(201).json({
             status: 'success',
@@ -109,46 +109,72 @@ const createTour = async(req , res) => {
         res.status(400).json({
             status: 'fail',
             message: 'Bad Request',
-            error : `${err.message}`
+            error: `${err.message}`
         });
     }
 }
 
-const updateTour = (_ , res) => {
-    //to be finished 
-    res.status(500).josn({
-        status: 'fail',
-        message: 'Server error/ Not Created',
-    })
+const updateTour = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        // findOneAndUpdate(filter , Object to update , Addons);
+        const tour = await tourModel.findOneAndUpdate({_id : id}, req.body, {
+            new: true,
+            runValidators: true ,
+        })
+
+        res.status(200).json({
+
+            status: 'Success',
+            message: 'Tour updated successfully',
+            UpdatedTour: {
+                tour
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({
+            status: 'fail',
+            message: 'Bad request',
+            error : `${err.message}`,
+        })
+    }
+
 }
 
-const deleteTour = async(req , res) => {
-    const id = req.params.id ;
+const deleteTour = async (req, res) => {
+    try {
+        const id = req.params.id;
 
-    const tour = await tourModel.deleteOne({ _id : id});
+        await tourModel.deleteOne({ _id: id });
 
-    res.status(200).json({
-        status : 'Success', 
-        messege : 'Tour deleted successfully' , 
-        data : {
-            tour , 
-        }
-    })
-    res.status(500).json({
-        status: 'fail',
-        message: 'Server error/ Not Created',
-    }) 
+        res.status(200).json({
+            status: 'Success',
+            messege: 'Tour deleted successfully',
+            // Common Practice not to send any data on delete operations
+            // data: {
+            //     tour,
+            // }
+        })
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Bad Request',
+            error: `${err.message}`
+        })
+    }
 }
 
 const tourControllers = {
-     // accessFile,
+    // accessFile,
     deleteTour,
     getAllTour,
     getTourById,
     updateTour,
     createTour,
-     // checkId ,
-     // validateCreateReq,
+    // checkId ,
+    // validateCreateReq,
 }
 
-export default tourControllers ; 
+export default tourControllers; 
