@@ -51,7 +51,30 @@ import tourModel from '../models/tourModel.js';
 const getAllTour = async (req, res) => {
     try {
 
-        const data = await tourModel.find(); // mongoose querry 
+        // filtering 
+        let queryObj = {...req.query}; // Call by value ----- qObj = req.query => Call by reference
+        const excludeFields = [  'page' , 'limit' , 'fields']; // speacial fields
+        
+        excludeFields.forEach(ele => delete queryObj[ele]); // ForEach so no new array is returned via filter/map
+        
+        //Advance filtering 
+
+        let queryStr = JSON.stringify(queryObj); // Step 1: Convert query object to string
+        queryStr = queryStr.replace(/\b(gte|lte|gt|lt)\b/g, ele => `$${ele}`);        // Add $ prefix to matched operators
+
+        let query = tourModel.find(JSON.parse(queryStr));
+
+        //Sorting
+        // Sorting not working !!
+        
+        console.log(req.query.sort);
+        if(req.query.sort){
+            query = query.sort(req.query.sort);
+        }
+
+        // Executing the final query
+
+        const data = await query ;
 
         res.status(200).json({
             status: 'success',
