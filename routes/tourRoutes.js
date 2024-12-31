@@ -6,6 +6,8 @@ const router = express.Router();
 // Middlewear to validate id parameter in request 
 // router.param('id' , tourController.checkId) ;
 
+router.route('/TopTours')
+      .get( tourController.alaisTopTours, tourController.getAllTour)
 
 router.route('/')
       .get(tourController.getAllTour)

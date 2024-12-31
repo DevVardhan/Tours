@@ -1,6 +1,7 @@
 // import fs from 'fs/promises';
 
 import tourModel from '../models/tourModel.js';
+import apiFeature from '../utils/apiFeatures.js';
 
 // ============================= NOT USING FILES AS DATABASE ======================================
 // const accessFile = async () => {
@@ -47,34 +48,23 @@ import tourModel from '../models/tourModel.js';
 //     next();
 // }
 
+const alaisTopTours = (req , _ , next) =>{
+    req.query.limit = '5';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+    next();
+}
 
 const getAllTour = async (req, res) => {
     try {
 
-        // filtering 
-        let queryObj = {...req.query}; // Call by value ----- qObj = req.query => Call by reference
-        const excludeFields = [  'page' , 'limit' , 'fields']; // speacial fields
-        
-        excludeFields.forEach(ele => delete queryObj[ele]); // ForEach so no new array is returned via filter/map
-        
-        //Advance filtering 
+        const features = new apiFeature(tourModel.find(), req.query)
+            .filter()
+            .sort()
+            .paginate()
+            .limitFileds();
 
-        let queryStr = JSON.stringify(queryObj); // Step 1: Convert query object to string
-        queryStr = queryStr.replace(/\b(gte|lte|gt|lt)\b/g, ele => `$${ele}`);        // Add $ prefix to matched operators
-
-        let query = tourModel.find(JSON.parse(queryStr));
-
-        //Sorting
-        // Sorting not working !!
-        
-        console.log(req.query.sort);
-        if(req.query.sort){
-            query = query.sort(req.query.sort);
-        }
-
-        // Executing the final query
-
-        const data = await query ;
+        const data = await features.query;
 
         res.status(200).json({
             status: 'success',
@@ -198,6 +188,7 @@ const tourControllers = {
     createTour,
     // checkId ,
     // validateCreateReq,
+    alaisTopTours,
 }
 
 export default tourControllers; 
