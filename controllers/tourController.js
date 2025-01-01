@@ -1,5 +1,6 @@
 // import fs from 'fs/promises';
 
+import pipe from '../utils/pipeAgg.js';
 import tourModel from '../models/tourModel.js';
 import apiFeature from '../utils/apiFeatures.js';
 
@@ -179,6 +180,25 @@ const deleteTour = async (req, res) => {
     }
 }
 
+const getTourStats = async (req, res) => {
+    try {
+        const field = req.query.field;
+        const stats = await pipe(tourModel , field);
+        res.status(200).json({
+            status: 'Success',
+            messege: 'Stats analysed successfully',
+            stats
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({
+            status: 'fail',
+            message: 'Bad Request',
+            error: `${err.message}`
+        })
+    }
+}
+
 const tourControllers = {
     // accessFile,
     deleteTour,
@@ -189,6 +209,7 @@ const tourControllers = {
     // checkId ,
     // validateCreateReq,
     alaisTopTours,
+    getTourStats,
 }
 
 export default tourControllers; 
