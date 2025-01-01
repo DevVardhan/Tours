@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import validator from "validator";
 
 // Test database by creating a model
 // currently not calling the function
@@ -11,11 +12,12 @@ const createTour = async() => {
         })
 
         const doc = await testTour.save();
-        if(provess.env.NODE_ENV === 'development')console.log(doc); 
+        if(process.env.NODE_ENV === 'development')console.log(doc); 
     } catch (err) {
         console.log(err);
     }
 }
+
 
 
 // Creating a tours Schema for our tour Model
@@ -25,6 +27,9 @@ const tourSchema = new mongoose.Schema({
         required: [true, 'A tour must have  a name '], // an array with error string in case the requirement is not met
         unique: true,
         trim : true ,
+        maxLength:[40 ,'Name must be less than 40characters'],
+        minLength:[5 , 'Too small name'],
+        // validate: [validator.isAlpha , 'Tour name must only contain valid characters'] // 3rd party middlewear
     },
     duration: {
         type: Number,
@@ -37,13 +42,18 @@ const tourSchema = new mongoose.Schema({
     difficulty: {
         type: String,
         required: [true, 'difficulty is required'],
+        enum:{
+            values: ['easy','medium','difficult'],
+            message:'set difficulty to easy/medium/difficult',
+        }
     },
     ratingsAverage: {
         type: Number,
         default: 4.5,
-        // max: 5, // can also set min props 
+        min: [1 ,'Rating must be gte 1 '],
+        max: [5 , 'Ratings must be less then equal to 5']
     },
-    ratingsQunatity: {
+    ratingsQuantity: {
         type: Number,
         default: 0,
     },
@@ -53,7 +63,14 @@ const tourSchema = new mongoose.Schema({
     },
     discount: {
         type: Number,
-        
+        //Wont work on update
+        validate:{
+            validator: function(val){
+                //this point to document while creating 
+            return val < this.price;
+        },
+        message: `discount value ({VALUE}) exceeds the price`,    
+    }
     },
     summary: {
         type: String ,
@@ -74,12 +91,20 @@ const tourSchema = new mongoose.Schema({
     createdAt:{
         type: Date ,
         default : Date.now(),
-        select : false ,
+        select : false , 
     },
     startDate: {
         type: [Date] , 
     }
-    
+},{
+    toJSON: {virtuals: true} , 
+    toObject:{virtuals: true} ,
+})
+
+//virtual properties
+//Cannot use this props in query since they are not actually in our databse but calculated each time the request is recived
+tourSchema.virtual('durationWeeks').get(function(){
+    return this.duration / 7 ;
 })
 
 // creating a tourModel with toursSchema
