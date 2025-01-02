@@ -78,7 +78,7 @@ const getAllTour = async (req, res) => {
     } catch (err) {
         //internal server error 
         res.status(500).json({
-            status: 'fail',
+            status: 'err',
             message: 'Server error',
             error: `${err}`,
         });
@@ -98,7 +98,7 @@ const getTourById = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).json({
-            status: 'fail',
+            status: 'err',
             message: 'Server error',
             error: `${err}`,
         });

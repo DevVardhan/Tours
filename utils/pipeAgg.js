@@ -1,7 +1,6 @@
 
-
 const pipe = (model , field) =>{
-  const stats = model.aggregate([
+  return model.aggregate([
     {
         $match: {ratingsAverage: {$gte: 4.5}}
     },
@@ -20,7 +19,6 @@ const pipe = (model , field) =>{
         }
     }
   ])  
-  return stats ;
 }
 
 export default pipe ;
