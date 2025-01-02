@@ -49,6 +49,9 @@ import apiFeature from '../utils/apiFeatures.js';
 //     next();
 // }
 
+//==================================== (application logic) ==============================================================
+
+//sets props to req and send req to getAllTours , achiving speacial functionalities using querries
 const alaisTopTours = (req , _ , next) =>{
     req.query.limit = '5';
     req.query.sort = '-ratingsAverage,price';
@@ -58,7 +61,8 @@ const alaisTopTours = (req , _ , next) =>{
 
 const getAllTour = async (req, res) => {
     try {
-
+        // function(Query , queryobject)
+        // @returns query 
         const features = new apiFeature(tourModel.find(), req.query)
             .filter()
             .sort()
@@ -108,6 +112,7 @@ const getTourById = async (req, res) => {
 const createTour = async (req, res) => {
     try {
 
+        //alternate method -> newTour = new tourModel({...req.body}) -> newTour.save(); under the hood tourModel.create(req)
         const newTour = await tourModel.create(req.body); // Creating Document for new tour 
 
         // status code - 201 => data generated / created successfully
@@ -132,10 +137,10 @@ const updateTour = async (req, res) => {
     try {
         const id = req.params.id;
 
-        // findOneAndUpdate(filter , Object to update , Addons);
+        // findOneAndUpdate(filter , Object to update , parameters);
         const tour = await tourModel.findOneAndUpdate({_id : id}, req.body, {
             new: true,
-            runValidators: true ,
+            runValidators: true , // by default validators don't work on update 
         })
 
         res.status(200).json({
@@ -147,7 +152,7 @@ const updateTour = async (req, res) => {
             }
         })
     } catch (err) {
-        console.log(err);
+        //console.log(err);
         res.status(400).json({
             status: 'fail',
             message: 'Bad request',
@@ -183,11 +188,14 @@ const deleteTour = async (req, res) => {
 const getTourStats = async (req, res) => {
     try {
         const field = req.query.field;
+        
+        // function(mongoose.model , req.query.field)
+        // @returns mongoose.aggregate([])
         const stats = await pipe(tourModel , field);
         res.status(200).json({
             status: 'Success',
             messege: 'Stats analysed successfully',
-            stats
+            stats // use the var directoly if bot name and data are same in json message
         })
     } catch (err) {
         console.log(err);
