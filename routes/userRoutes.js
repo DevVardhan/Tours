@@ -1,7 +1,11 @@
 import express from "express";
 import userControllers from "../controllers/userController.js";
+import authControllers from "../controllers/authController.js";
 
 const router = express.Router();
+
+router.route('/signup')
+      .post(authControllers.userSignup);
 
 router.route('/')
       .get(userControllers.getAllUsers)
