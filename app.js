@@ -3,6 +3,8 @@ import Morgan from 'morgan';
 import tourRouter from './routes/tourRoutes.js'; // Import default export
 import userRouter from './routes/userRoutes.js'; // Import default export
 import * as dotenv from 'dotenv';
+import globalErrorHandler from './controllers/errorController.js';
+
 
 const app = express();
 dotenv.config(); 
@@ -27,12 +29,10 @@ app.use('/api/v1/Tours', tourRouter);  // Attach tourRouter to the route
 app.use('/api/v1/Users', userRouter);  // Attach userRouter to the route
 
 // Error handeler for invalid routes
-app.all('*',(req , res , next)=>{
-    res.status(404).json({
-        status: 'fail',
-        message: `Can't find ${req.originalUrl}`,
-    });
-    next();
-})
+app.all('*', (req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  });
+  
+app.use(globalErrorHandler);
 
 export default app;
