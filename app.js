@@ -29,7 +29,7 @@ app.use('/api/v1/Tours', tourRouter);  // Attach tourRouter to the route
 app.use('/api/v1/Users', userRouter);  // Attach userRouter to the route
 
 // Error handeler for invalid routes
-app.all('*', (req, res, next) => {
+app.all('*', (req, _, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
   });
   

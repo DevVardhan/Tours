@@ -1,5 +1,6 @@
 import express from 'express';
 import tourController from "../controllers/tourController.js";
+import authControllers from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.route('/topTours')
       .get( tourController.alaisTopTours, tourController.getAllTour)
 
 router.route('/')
-      .get(tourController.getAllTour)
+      .get(authControllers.isLogged , tourController.getAllTour)
       .post(tourController.createTour);
 
 

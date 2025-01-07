@@ -28,6 +28,14 @@ const sendErrorDev = (err, res) => {
   });
 };
 
+const handelJwtError = _ =>{
+  return new appError('Invalid Token , please try again' , 401);
+}
+
+const handelJwtExpiredError = _ => {
+  return new appError('Login expired (Token)' , 401);
+}
+
 const sendErrorProd = (err, res) => {
   // Operational, trusted error: send message to client
   if (err.isOperational) {
@@ -64,7 +72,8 @@ const globalErrorHandler = (err, _, res, next) => {
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
-
+    if(error.name === 'JsonWebTokenError') errorr = handelJwtError();
+    if(error.name === 'TokenExpiredError') errorr = handelJwtExpiredError();
     sendErrorProd(error, res);
   }
 };
